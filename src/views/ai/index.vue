@@ -13,7 +13,7 @@
         <template #header="{ item }">
           <div class="header-wrapper">
             <div class="header-name">
-              {{ item.role === "ai" ? "Element Plus X 🍧" : "🧁 用户" }}
+              {{ item.role === "ai" ? "AI助理 🍧" : "🧁 用户" }}
             </div>
           </div>
         </template>
@@ -43,7 +43,6 @@
         <!-- 自定义 loading -->
         <template #loading="{ item }">
           <div class="loading-container">
-            <span>#{{ item.role }}-{{ item.key }}：</span>
             <span>我</span>
             <span>是</span>
             <span>自</span>
@@ -60,22 +59,23 @@
       </BubbleList>
     </div>
     <div class="text-content">
-      <EditorSender
+      <Sender
+        v-model="state.senderValue"
         :custom-style="{ maxHeight: '240px' }"
         placeholder="请输入内容"
         clearable
         :loading="state.loading"
         @cancel="handleCancel"
         @submit="handleSubmit"
-        style="
-          background-image: linear-gradient(to left, #7fffaa 0%, #00ffff 100%);
-          border-radius: 8px;
-        "
+        style="border-radius: 8px"
+        :disabled="state.loading"
       />
     </div>
   </div>
 </template>
 <script setup>
+import UserIcon from "@/assets/images/user.jpg"
+import AiIcon from "@/assets/images/ai.png"
 import { ref, reactive } from "vue"
 import { BubbleList, Sender, EditorSender } from "vue-element-plus-x"
 const list = [
@@ -88,15 +88,14 @@ const state = reactive({
   loading: false,
   messages: [],
   eventBuffer: "",
+  senderValue: "",
 })
 
 // import { DocumentCopy, Refresh, Search, Star } from '@element-plus/icons-vue';
 
 generateFakeItems()
-const avatar = ref("https://avatars.githubusercontent.com/u/76239030?v=4")
-const avartAi = ref("https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png")
-const switchValue = ref(false)
-const loading = ref(false)
+const avatar = UserIcon
+const avartAi = AiIcon
 function formatDateTime(date = new Date()) {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, "0") // 月份从0开始，所以需要加1
@@ -107,7 +106,7 @@ function formatDateTime(date = new Date()) {
 
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
-function generateFakeItems(role = "ai", content = "你好，我是 Element Plus X") {
+function generateFakeItems(role = "ai", content = "你好，我是你的智能助手") {
   // 默认的ai 展示内容
   let key = state.messages.length + 1
   state.messages.push({
@@ -119,30 +118,17 @@ function generateFakeItems(role = "ai", content = "你好，我是 Element Plus 
     loading: false,
     date: formatDateTime(new Date()),
   })
-  // for (let i = 0; i < count; i++) {
-  //   const role = i % 2 === 0 ? "ai" : "user"
-  //   const placement = role === "ai" ? "start" : "end"
-  //   const key = i + 1
-  //   messages.push({
-  //     key,
-  //     role,
-  //     placement,
-  //     noStyle: true, // 如果你不想用默认的气泡样式
-  //   })
-  // }
 }
 
-// 设置某个 item 的 loading
-function setLoading(loading) {
-  bubbleItems.value[bubbleItems.value.length - 1].loading = loading
-  bubbleItems.value[bubbleItems.value.length - 2].loading = loading
-}
 // 发送请求
 const handleSubmit = (val) => {
   console.log(val, "11")
+  console.log(state.senderValue, "22")
+
   state.loading = true
-  callSSEAPI(val.text)
-  generateFakeItems("user", val.text)
+
+  callSSEAPI(state.senderValue)
+  generateFakeItems("user", state.senderValue)
 }
 const handleCancel = (val) => {
   state.loading = false
@@ -244,6 +230,7 @@ async function callSSEAPI(text) {
               const lastIndex = state.messages.length - 1
               state.messages[lastIndex].content = state.eventBuffer
               state.messages[lastIndex].loading = false
+              state.messages[lastIndex].date = formatDateTime(new Date())
 
               // 强制更新视图
               // Vue 3 的响应式系统可能需要显式地触发更新
@@ -261,8 +248,11 @@ async function callSSEAPI(text) {
     }
     console.log("\n流处理完成")
     state.loading = false
+    state.senderValue = undefined
   } catch (error) {
     console.error("请求失败:", error)
+    ElMessage.error(`请求失败，稍后再试！`)
+    state.loading = false
   }
 }
 </script>
