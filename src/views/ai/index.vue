@@ -75,7 +75,7 @@
     </div>
   </div>
 </template>
-<script setup lang="ts">
+<script setup>
 import { ref, reactive } from "vue"
 import { BubbleList, Sender, EditorSender } from "vue-element-plus-x"
 const list = [
@@ -92,11 +92,6 @@ const state = reactive({
 
 // import { DocumentCopy, Refresh, Search, Star } from '@element-plus/icons-vue';
 
-type listType = BubbleListItemProps & {
-  key: number
-  role: "user" | "ai"
-}
-
 generateFakeItems()
 const avatar = ref("https://avatars.githubusercontent.com/u/76239030?v=4")
 const avartAi = ref("https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png")
@@ -112,7 +107,7 @@ function formatDateTime(date = new Date()) {
 
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
-function generateFakeItems(role = "ai", content = "你好，我是 Element Plus X"): listType[] {
+function generateFakeItems(role = "ai", content = "你好，我是 Element Plus X") {
   // 默认的ai 展示内容
   let key = state.messages.length + 1
   state.messages.push({
@@ -138,7 +133,7 @@ function generateFakeItems(role = "ai", content = "你好，我是 Element Plus 
 }
 
 // 设置某个 item 的 loading
-function setLoading(loading: boolean) {
+function setLoading(loading) {
   bubbleItems.value[bubbleItems.value.length - 1].loading = loading
   bubbleItems.value[bubbleItems.value.length - 2].loading = loading
 }
@@ -271,7 +266,7 @@ async function callSSEAPI(text) {
   }
 }
 </script>
-<style scoped>
+<style scoped lang="less">
 .main {
   width: 100%;
   height: 100%;
@@ -373,7 +368,7 @@ async function callSSEAPI(text) {
   animation-delay: 0.9s;
 }
 
-/deep/.el-bubble-no-style .el-bubble-content-wrapper .el-bubble-content {
+:deep(.el-bubble-no-style .el-bubble-content-wrapper .el-bubble-content) {
   max-width: 90% !important;
 }
 .content-wrapper {
